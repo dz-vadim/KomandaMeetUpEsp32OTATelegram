@@ -1,0 +1,15 @@
+#pragma once
+
+// Дані для Telegram бота (створити через BotFather)
+#define TG_BOT_TOKEN "123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+// ID вашого особистого чату або групи (цілочисельне)
+#define TG_CHAT_ID   "123456789"
+
+// Ім’я GitHub-репо у форматі owner/repo
+#define GH_REPO "yourname/esp32-ota-telegram"
+// Ім’я файлу прошивки, який викладається у реліз
+#define GH_FW_FILENAME "firmware.bin"
+
+// (опц.) мітка для WiFiManager AP
+#define WM_AP_NAME "ESP32-Setup"
+#define WM_AP_PASS ""   // залиште порожнім = без пароля
