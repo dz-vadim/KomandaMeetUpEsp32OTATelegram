@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include "lcd_display.h"
-#include "led_control.h"
 #include "wifi_setup.h"
 #include "telegram_api.h"
 #include "ota_update.h"
@@ -18,7 +17,6 @@ static bool updating = false;
 void setup() {
   Serial.begin(115200);
 
-  ledStartupTest();      // короткий тест вбудованого LED
   lcdInit();
   showBoot();
 
