@@ -18,16 +18,16 @@ void setup() {
   Serial.begin(115200);
 
   lcdInit();
-  lcdShow("Booting...", "FW " + String(FW_VERSION));
+  lcdShow(String(F("Booting...")), String(F("FW ")) + FW_VERSION);
 
   telegramInit();
   setupWiFiWithPortal(deviceName);
-  lcdShow("WiFi OK", WiFi.localIP().toString());
+  lcdShow(String(F("WiFi OK")), WiFi.localIP().toString());
 
-  sendTelegram("Device online. FW " + String(FW_VERSION) + 
-               "\nIP: " + WiFi.localIP().toString() + 
-               "\nSend /update");
-  lcdShow("Ready", "v" + String(FW_VERSION));
+  sendTelegram(String(F("Device online. FW ")) + FW_VERSION +
+               String(F("\nIP: ")) + WiFi.localIP().toString() +
+               String(F("\nSend /update")));
+  lcdShow(String(F("Ready")), String(F("v")) + FW_VERSION);
 }
 
 void loop() {
@@ -38,10 +38,10 @@ void loop() {
 
     if (fetchTelegramAndCheckUpdateCmd()) {
       updating = true;
-      sendTelegram("Starting OTA...");
-      lcdShow("Updating...", "");
+      sendTelegram(F("Starting OTA..."));
+      lcdShow(String(F("Updating...")), String());
       if (!doOTAFromLatestRelease()) {
-        updating = false;
+        updating = false; // якщо оновлення не сталось — продовжуємо опитування
       }
     }
   }
