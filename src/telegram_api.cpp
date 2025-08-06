@@ -4,8 +4,10 @@
 #include <ArduinoJson.h>
 #include "secrets.h"
 
+static long lastProcessedId = 0; // щоб не запускати повторно
+
 void telegramInit() {
-  // Нічого не робимо — спрощено
+  lastProcessedId = 0;
 }
 
 bool sendTelegram(const String &text) {
@@ -39,9 +41,15 @@ bool fetchTelegramAndCheckUpdateCmd() {
   http.end();
 
   for (JsonObject upd : doc["result"].as<JsonArray>()) {
+    long updId = upd["update_id"] | 0;
     String chatId = String((long)upd["message"]["chat"]["id"]);
     String text = String((const char*)upd["message"]["text"]);
+
+    // Ігноруємо, якщо це старе повідомлення
+    if (updId <= lastProcessedId) continue;
+
     if (chatId == TG_CHAT_ID && text.equalsIgnoreCase("/update")) {
+      lastProcessedId = updId; // запам'ятовуємо, щоб не повторювати
       return true;
     }
   }
