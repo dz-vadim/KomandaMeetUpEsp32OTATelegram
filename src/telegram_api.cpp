@@ -1,60 +1,34 @@
-#include <Arduino.h>
-#include <WiFiClientSecure.h>
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
-#include <Preferences.h>
-#include "secrets.h"
+#include "telegram_api.h"
 
-static Preferences prefs;
-static long lastProcessedId = 0;
+WiFiClientSecure tgClient;
+UniversalTelegramBot bot(TG_BOT_TOKEN, tgClient);
+int lastProcessedId = 0;
 
 void telegramInit() {
-  prefs.begin("tg", false);
-  lastProcessedId = prefs.getLong("lastId", 0);
+  // Для простоти і щоб не возитися з сертифікатами
+  tgClient.setInsecure();
 }
 
 bool sendTelegram(const String &text) {
-  WiFiClientSecure client; client.setInsecure();
-  HTTPClient http;
-  String url = "https://api.telegram.org/bot" + String(TG_BOT_TOKEN) + "/sendMessage";
-  if (!http.begin(client, url)) return false;
-  http.addHeader("Content-Type", "application/json");
-
-  JsonDocument doc;
-  doc["chat_id"] = TG_CHAT_ID;
-  doc["text"] = text;
-
-  String body; serializeJson(doc, body);
-  bool ok = (http.POST(body) == HTTP_CODE_OK);
-  http.end();
-  return ok;
+  // Повертає true/false за результатом відправлення
+  return bot.sendMessage(TG_CHAT_ID, text, "Markdown");
 }
 
 bool fetchTelegramAndCheckUpdateCmd() {
-  WiFiClientSecure client; client.setInsecure();
-  HTTPClient http;
-  String url = "https://api.telegram.org/bot" + String(TG_BOT_TOKEN) + "/getUpdates?timeout=1";
-  if (lastProcessedId > 0) url += "&offset=" + String(lastProcessedId + 1);
-
-  if (!http.begin(client, url)) return false;
-  if (http.GET() != HTTP_CODE_OK) { http.end(); return false; }
-
-  JsonDocument doc;
-  if (deserializeJson(doc, http.getStream())) { http.end(); return false; }
-  http.end();
-
+  // Отримуємо тільки нові апдейти
+  int numNew = bot.getUpdates(lastProcessedId + 1);
   bool shouldUpdate = false;
-  for (JsonObject upd : doc["result"].as<JsonArray>()) {
-    long updId = upd["update_id"] | 0;
-    String chatId = String((long)upd["message"]["chat"]["id"]);
-    String text   = String((const char*)upd["message"]["text"]);
 
-    if (updId > lastProcessedId) {
-      lastProcessedId = updId;
-      prefs.putLong("lastId", lastProcessedId);
-    }
+  for (int i = 0; i < numNew; i++) {
+    auto &m = bot.messages[i];
 
-    if (chatId == TG_CHAT_ID && text.equalsIgnoreCase("/update")) {
+    // Оновлюємо локальний lastProcessedId
+    // (у UniversalTelegramBot update_id — це int)
+    lastProcessedId = m.update_id;
+
+    // Перевіряємо чат та команду
+    if (m.chat_id == String(TG_CHAT_ID) &&
+        (m.text == "/update" || m.text.startsWith("/update@"))) {
       shouldUpdate = true;
     }
   }
