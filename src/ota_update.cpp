@@ -16,12 +16,12 @@ static String ghLatestReleaseUrl() {
 }
 
 bool doOTAFromLatestRelease() {
-  showUpdating();
+  lcdShow("Updating...", "Please wait");
 
   WiFiClientSecure client; 
   client.setInsecure();
 
-  httpUpdate.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS); // слідуємо за 302 GitHub
+  httpUpdate.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS); // для 302 від GitHub
   httpUpdate.rebootOnUpdate(true);
 
   String url = ghLatestReleaseUrl();
@@ -29,8 +29,8 @@ bool doOTAFromLatestRelease() {
 
   switch (ret) {
     case HTTP_UPDATE_OK:
-      showUpdateDone(true);
-      return true; // пристрій перезавантажиться автоматично
+      lcdShow("Update OK", "Rebooting...");
+      return true; // пристрій перезавантажиться
     case HTTP_UPDATE_NO_UPDATES:
       sendTelegram("No updates available.");
       break;
@@ -39,7 +39,7 @@ bool doOTAFromLatestRelease() {
       sendTelegram(String("Update failed: ") + httpUpdate.getLastErrorString());
       break;
   }
-  showUpdateDone(false);
-  delay(3000);
+  lcdShow("Update FAIL", "See Telegram");
+  delay(2000);
   return false;
 }
