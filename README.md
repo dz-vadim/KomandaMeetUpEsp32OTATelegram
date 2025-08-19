@@ -68,7 +68,7 @@ build-release.yml
 
 ```bash
 # Клонування репозиторію
-git clone https://github.com/dz-vadim/esp32-ota-telegram.git && cd esp32-ota-telegram
+git clone https://github.com/dz-vadim/KomandaMeetUpEsp32OTATelegram.git && cd esp32-ota-telegram
 
 # Встановлення PlatformIO
 pip install platformio
