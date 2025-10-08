@@ -12,7 +12,7 @@
 #ifndef LCD_ROWS
 #define LCD_ROWS 2
 #endif
-
+//add test comment
 static LiquidCrystal_I2C lcd(LCD_I2C_ADDR, LCD_COLS, LCD_ROWS);
 
 void lcdInit() {
